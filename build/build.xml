@@ -53,6 +53,9 @@
 		  <fileset dir="${cfml.engine.libs}" includes="**/railo-*.jar" />
 		  <regexpmapper from="railo-\d[\d\.]+.jar$" to="railo.jar"/>
 		</move>
+		<pom-and-deploy pomid="${engine.type}.tomcat.pom" packaging="zip" buildtype="${mvn.type}" repoId="cfdistro.repo.local"
+		 groupId="${engine.groupid}" artifact="${installer.dist.dir}/${engine.type}-tomcat-${installer.version}.zip" 
+		 artifactId="${engine.type}.tomcat" version="${installer.version}" name="${engine.type}.tomcat" />
 
 		<bitrock-all engine="${engine.type}" />
 	</target>
