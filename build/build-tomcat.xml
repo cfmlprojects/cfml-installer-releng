@@ -1,0 +1,105 @@
+<project name="installer.tomcat.build" default="build" basedir="./" xmlns:antcontrib="antlib:net.sf.antcontrib">
+
+	<loadproperties srcfile="build.properties"/>
+	<property name="installer.tomcat.dir" location="${temp.dir}/tomcat"/>
+
+	<target name="build.installer.tomcat" depends="build.dependencies">
+		<delete dir="${installer.tomcat.dir}" />
+		<dependency groupId="org.apache.tomcat" artifactId="tomcat" version="${installer.tomcat.version}" 
+			dest="${temp.dir}" unzip="true" />
+		<move toDir="${installer.tomcat.dir}">
+			<fileset dir="${temp.dir}/apache-tomcat-${installer.tomcat.version}" includes="**" />
+		</move>
+		<copy toDir="${installer.tomcat.dir}">
+			<fileset dir="${basedir}/resource/tomcat/" includes="**" />
+		</copy>
+		<copy toDir="${installer.tomcat.dir}/lib" file="${basedir}/resource/mod_cfml/mod_cfml-valve.jar" />
+		<delete dir="${installer.tomcat.dir}/webapps/examples" />
+		<delete dir="${installer.tomcat.dir}/webapps/docs" />
+
+		<replaceregexp byline="false" file="${installer.tomcat.dir}/conf/catalina.properties" flags="msi">
+			<regexp pattern="^common.loader=" />
+			<substitution expression="common.loader=$${catalina.home}/../lib/*.jar," />
+		</replaceregexp>
+		<!--  For security, set the HttpOnly flag in cookies. -->
+		<xmltask source="${installer.tomcat.dir}/conf/context.xml" dest="${installer.tomcat.dir}/conf/context.xml">
+			<attr path="/Context" attr="useHttpOnly" value="true" />
+		</xmltask>
+		<!--  For security, set the HttpOnly flag in cookies. -->
+		<xmltask source="${installer.tomcat.dir}/conf/server.xml" dest="${installer.tomcat.dir}/conf/server.xml">
+			<attr path="/Server/Service/Engine" attr="defaultHost" value="127.0.0.1" />
+			<attr path="/Server/Service/Engine/Host[@name='localhost']" attr="name" value="127.0.0.1" />
+			<replace path="/Server/Service/Connector[@protocol='HTTP/1.1']/@port" withText="8888"/>
+			<replace path="/Server/Service/Connector[@protocol='AJP/1.3']/@port" withText="8009"/>
+			<attr path="/Server/Service/Engine/Host/Valve[@className='org.apache.catalina.valves.AccessLogValve']" attr="resolveHosts" value="false"/>
+		</xmltask>
+		<xmltask source="${installer.tomcat.dir}/conf/server.xml" dest="${installer.tomcat.dir}/conf/server.xml">
+			<copy path="Server/Service/Engine/Host[@name='127.0.0.1']/Valve[@className='mod_cfml.core']" attrValue="true" property="mod_cfml.valve.exists"/>
+			<insert path="Server/Service/Engine/Host[@name='127.0.0.1']" position="under" unless="mod_cfml.valve.exists" 
+				file="${basedir}/resource/mod_cfml/valve.xml" />
+		</xmltask>
+		<xmltask source="${installer.tomcat.dir}/conf/web.xml" dest="${installer.tomcat.dir}/conf/web.xml">
+			<copy path="//:web-app/:servlet/servlet-name[text()='GlobalCFMLServlet']/text()" property="installer.webfrag.exists"/>
+			<insert path="//:web-app/:servlet[last()]" position="after" file="${basedir}/resource/railo/web.fragment.xml" unless="installer.webfrag.exists"/>
+		</xmltask>
+		<xmltask source="${installer.tomcat.dir}/conf/web.xml" dest="${installer.tomcat.dir}/conf/web.xml">
+			<replace path="//:web-app/:welcome-file-list">
+				<![CDATA[
+			    <welcome-file-list>
+			        <welcome-file>index.cfm</welcome-file>
+			        <welcome-file>index.cfml</welcome-file>
+			        <welcome-file>index.html</welcome-file>
+			        <welcome-file>index.htm</welcome-file>
+			        <welcome-file>index.jsp</welcome-file>
+			    </welcome-file-list>
+			    ]]>
+			</replace>
+		</xmltask>
+
+		<replaceregexp file="${installer.tomcat.dir}/conf/server.xml" flags="msig" byline="false">
+			<regexp pattern=".tempcomment.(.*?)./tempcomment." />
+			<substitution expression="&lt;!-- \1 --&gt;" />
+		</replaceregexp>
+
+		<xmltask source="${installer.tomcat.dir}/conf/tomcat-users.xml" dest="${installer.tomcat.dir}/conf/tomcat-users.xml">
+			<copy path="tomcat-users/user[@username='@@myTomcatAdminUsername@@']/@username" attrValue="true" property="tomcat.user.exists"/>
+			<insert path="tomcat-users" position="under" unless="tomcat.user.exists">
+				<![CDATA[
+				<role rolename="manager"/>
+				<role rolename="manager-gui"/>
+				<role rolename="manager-script"/>
+				<role rolename="admin"/>
+				<role rolename="admin-gui"/>
+				<role rolename="admin-script"/>
+				<user username="@@myTomcatAdminUsername@@" password="@@myTomcatAdminPassword@@" roles="admin,manager,manager-gui,admin-gui" />
+				]]>
+			</insert>
+		</xmltask>
+		<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="crlf" />
+
+		<delete file="${installer.dist.dir}/${engine.type}-tomcat-${installer.version}.zip"/>
+		<zip destfile="${installer.dist.dir}/${engine.type}-tomcat-${installer.version}.zip">
+			<zipfileset dir="${installer.tomcat.dir}/" 
+				includes="**" prefix="${engine.type}/tomcat/"
+				excludes="bin/**"/>
+			<zipfileset dir="${cfml.engine.libs}" 
+				includes="**" prefix="${engine.type}/lib/"/>
+			<zipfileset dir="${installer.tomcat.dir}/" 
+				includes="bin/**" prefix="${engine.type}/tomcat/"
+				filemode="711"/>
+		</zip>
+
+		<!-- now do installer tokens as default tomcat is zipped -->
+		<xmltask source="${installer.tomcat.dir}/conf/server.xml" dest="${installer.tomcat.dir}/conf/server.xml">
+			<attr path="/Server" attr="port" value="@@tomcatshutdownport@@" />
+			<replace path="/Server/Service/Connector[@protocol='HTTP/1.1']/@port" withText="@@tomcatport@@"/>
+			<replace path="/Server/Service/Connector[@protocol='AJP/1.3']/@port" withText="@@tomcatajpport@@"/>
+			<copy path="Server/Service/Engine/Host[@name='127.0.0.1']/Context/@path" attrValue="true" property="installer.context.exists"/>
+			<insert path="Server/Service/Engine/Host[@name='127.0.0.1']" position="under" unless="installer.context.exists">
+				<![CDATA[<Context path="" docBase="@@systempath@@" />]]>
+			</insert>
+		</xmltask>
+		
+	</target>
+
+</project>

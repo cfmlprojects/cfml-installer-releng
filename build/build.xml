@@ -1,0 +1,113 @@
+<project name="distro.build" default="build" basedir="./" xmlns:antcontrib="antlib:net.sf.antcontrib">
+
+	<loadproperties srcfile="build.properties"/>
+	<import file="${cfdistro.build.file}"/>
+	
+	<antcontrib:propertycopy property="engine.version" from="${engine.type}.version" />
+	<antcontrib:propertycopy property="engine.groupid" from="${engine.type}.groupId" />
+
+	<property name="installer.dist.dir" value="${dist.dir}/installer/"/>
+	<property name="bitrock.installers" value="${src.dir}" />
+	<property name="bitrock.license" location="${basedir}/license.xml"/>
+	<property name="bitrock.cmd" value="${user.home}/installbuilder-8.5.2/bin/builder"/>
+	<property name="installer.version" value="${engine.version}-pl${installer.patchlevel}"/>
+	<property name="jre.all.dir" location="${temp.dir}/jre"/>
+	<property name="cfml.engine.libs" location="${temp.dir}/cfml/lib"/>
+	<antcontrib:osfamily property="os.family" />
+	<property name="bitrock.platform" value="${os.family}"/>
+	<import file="${basedir}/build-tomcat.xml"/>
+
+	<target name="build.dependencies">
+		<mkdir dir="${installer.dist.dir}" />
+		<version-splitter property="engine.version" version="${engine.version}" bump=""/>
+		<delete dir="${bitrock.installers}/${engine.type}/${engine.type}/lib" />
+		<dependency groupId="${engine.groupid}" artifactId="${engine.type}" version="${engine.version.long}" 
+			dest="${cfml.engine.libs}" unzip="false" type="jar" />
+		<move todir="${cfml.engine.libs}" includeemptydirs="false">
+		  <fileset dir="${cfml.engine.libs}" includes="**/${engine.type}.dep-*" />
+		  <regexpmapper from="${engine.type}.dep[-\d\.]+(.*)$" to="\1"/>
+		</move>
+		<move todir="${cfml.engine.libs}" includeemptydirs="false">
+		  <fileset dir="${cfml.engine.libs}" includes="**/railo-*.jar" />
+		  <regexpmapper from="railo-\d[\d\.]+.jar$" to="railo.jar"/>
+		</move>
+	</target>
+
+	<target name="build.installer" depends="build.dependencies, build.installer.tomcat">
+		<mkdir dir="${installer.dist.dir}" />
+		<version-splitter property="engine.version" version="${engine.version}" bump=""/>
+		
+		<delete dir="${bitrock.installers}/${engine.type}/${engine.type}/lib" />
+		<!-- 
+		<dependency groupId="${engine.groupid}" artifactId="${engine.type}.dep"  
+			version="${engine.version.major}.0" dest="${bitrock.installers}/${engine.type}/${engine.type}/lib" unzip="false"/>
+		 -->
+
+		<dependency groupId="${engine.groupid}" artifactId="${engine.type}" version="${engine.version.long}" 
+			dest="${cfml.engine.libs}" unzip="false" type="jar" />
+		<move todir="${cfml.engine.libs}" includeemptydirs="false">
+		  <fileset dir="${cfml.engine.libs}" includes="**/${engine.type}.dep-*" />
+		  <regexpmapper from="${engine.type}.dep[-\d\.]+(.*)$" to="\1"/>
+		</move>
+		<move todir="${cfml.engine.libs}" includeemptydirs="false">
+		  <fileset dir="${cfml.engine.libs}" includes="**/railo-*.jar" />
+		  <regexpmapper from="railo-\d[\d\.]+.jar$" to="railo.jar"/>
+		</move>
+
+		<bitrock-all engine="${engine.type}" />
+	</target>
+
+	<target name="build.installer.release" depends="build.installer" >
+		<pom-and-deploy pomid="${engine.type}.installer.pom" packaging="pom" buildtype="${mvn.type}" repoId="cfdistro.repo.local"
+		 groupId="${engine.groupid}" artifactId="${engine.type}.installer" version="${installer.version}" name="${engine.type}.installer">
+        	<attachments>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-linux-x64-installer.run" type="run" classifier="linux64"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-linux-installer.run" type="run" classifier="linux32"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-windows-installer.exe" type="exe" classifier="windows32"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-osx-installer.zip" type="zip" classifier="darwin64"/>
+        	</attachments>
+		</pom-and-deploy>
+	</target>
+
+	<macrodef name="bitrock-all">
+		<attribute name="engine" default="${engine.type}" />
+		<sequential>
+			<property name="installer.os.list" value="linux-x64, linux, windows, osx"/>
+			<delete dir="${jre.all.dir}" />
+	
+			<dependency groupId="oracle" artifactId="jre" version="${jre.version}" type="zip"
+				classifier="win32" dest="${jre.all.dir}/jre32-win/jre/" unzip="true" />
+			<dependency groupId="oracle" artifactId="jre" version="${jre.version}" type="zip" 
+				classifier="win64" dest="${jre.all.dir}/jre64-win/jre/" unzip="true" />
+			<dependency groupId="oracle" artifactId="jre" version="${jre.version}"  type="zip"
+				classifier="linux32" dest="${jre.all.dir}/jre32-lin/jre/" unzip="true" />
+			<dependency groupId="oracle" artifactId="jre" version="${jre.version}"  type="zip"
+				classifier="linux64" dest="${jre.all.dir}/jre64-lin/jre/" unzip="true" />
+			<dependency groupId="oracle" artifactId="jre" version="${jre.version}"  type="zip"
+				classifier="darwin64" dest="${jre.all.dir}/jre64-darwin/jre/" unzip="true" />
+			
+	    	<antcontrib:for list="${installer.os.list}" param="type">
+				<sequential>
+					<exec executable="${bitrock.cmd}" dir="${bitrock.installers}" failonerror="true">
+				        <arg line="build @{engine}/@{engine}.xml @{type}"></arg>
+				        <arg line="--setvars project.outputDirectory='${dist.dir}/installer/' installer.version='${installer.version}'"/>
+				        <arg line="--setvars tomcat.dir='${installer.tomcat.dir}' jre.all.dir='${jre.all.dir}'"/>
+				        <arg line="--setvars cfml.engine.libs='${cfml.engine.libs}'"/>
+				        <arg line="--license '${bitrock.license}'"/>
+			        </exec>
+				</sequential>
+			</antcontrib:for>
+	
+			<zip destfile="${installer.dist.dir}/@{engine}-${installer.version}-osx-installer.zip" update="false">
+				<fileset dir="${installer.dist.dir}/" 
+					includes="@{engine}-${installer.version}-osx-installer.app/**"
+					excludes="@{engine}-${installer.version}-osx-installer.app/Contents/MacOS/**"/>
+				<zipfileset dir="${installer.dist.dir}/" 
+					includes="@{engine}-${installer.version}-osx-installer.app/Contents/MacOS/**"
+					filemode="711"/>
+			</zip>
+	
+		</sequential>
+	</macrodef>
+
+</project>
