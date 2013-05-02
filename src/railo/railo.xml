@@ -446,7 +446,7 @@
                             <actionList>
                                 <writeFile>
                                     <path>${installdir}\xcopy_script.bat</path>
-                                    <text>xcopy /E / Y "${installdir}\jre32-win\*" "${installdir}\"</text>
+                                    <text>xcopy /E /Y "${installdir}\jre32-win\*" "${installdir}\"</text>
                                     <ruleList>
                                         <compareValues>
                                             <logic>equals</logic>
@@ -457,7 +457,7 @@
                                 </writeFile>
                                 <writeFile>
                                     <path>${installdir}\xcopy_script.bat</path>
-                                    <text>xcopy /E / Y "${installdir}\jre64-win\*" "${installdir}\"</text>
+                                    <text>xcopy /E /Y "${installdir}\jre64-win\*" "${installdir}\"</text>
                                     <ruleList>
                                         <compareValues>
                                             <logic>equals</logic>
