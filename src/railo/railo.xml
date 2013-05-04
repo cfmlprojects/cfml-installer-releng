@@ -46,7 +46,7 @@
                     </distributionFileList>
                 </folder>
                 <folder>
-                    <description>Windows All</description>
+                    <description>Windows ${bittype}</description>
                     <destination>${installdir}</destination>
                     <name>windowsAll</name>
                     <platforms>windows</platforms>
@@ -55,10 +55,7 @@
                             <origin>windows/AJP13</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>${jre.all.dir}/jre32-win</origin>
-                        </distributionDirectory>
-                        <distributionDirectory>
-                            <origin>${jre.all.dir}/jre64-win</origin>
+                            <origin>${jre.all.dir}/jre${bittype}-win</origin>
                         </distributionDirectory>
                     </distributionFileList>
                 </folder>
@@ -75,9 +72,6 @@
                             <origin>${jre.all.dir}/jre32-lin</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>${jre.all.dir}/jre64-lin</origin>
-                        </distributionDirectory>
-                        <distributionDirectory>
                             <origin>linux/tomcat_connectors</origin>
                         </distributionDirectory>
                     </distributionFileList>
@@ -90,9 +84,6 @@
                     <distributionFileList>
                         <distributionDirectory>
                             <origin>linux/sys</origin>
-                        </distributionDirectory>
-                        <distributionDirectory>
-                            <origin>${jre.all.dir}/jre32-lin</origin>
                         </distributionDirectory>
                         <distributionDirectory>
                             <origin>${jre.all.dir}/jre64-lin</origin>
@@ -436,89 +427,6 @@
             </ruleList>
         </actionGroup>
 
-                <actionGroup>
-                    <progressText>${msg(postInstall.installingJRE)}</progressText>
-                    <actionList>
-                        <createDirectory>
-                            <path>${installdir}/jre/</path>
-                        </createDirectory>
-                        <actionGroup>
-                            <actionList>
-                                <writeFile>
-                                    <path>${installdir}\xcopy_script.bat</path>
-                                    <text>xcopy /E /Y "${installdir}\jre32-win\*" "${installdir}\"</text>
-                                    <ruleList>
-                                        <compareValues>
-                                            <logic>equals</logic>
-                                            <value1>${bittype}</value1>
-                                            <value2>32</value2>
-                                        </compareValues>
-                                    </ruleList>
-                                </writeFile>
-                                <writeFile>
-                                    <path>${installdir}\xcopy_script.bat</path>
-                                    <text>xcopy /E /Y "${installdir}\jre64-win\*" "${installdir}\"</text>
-                                    <ruleList>
-                                        <compareValues>
-                                            <logic>equals</logic>
-                                            <value1>${bittype}</value1>
-                                            <value2>64</value2>
-                                        </compareValues>
-                                    </ruleList>
-                                </writeFile>
-                                <runProgram>
-                                    <program>${installdir}\xcopy_script.bat</program>
-                                    <programArguments/>
-                                </runProgram>
-                                <deleteFile>
-                                    <path>${installdir}\xcopy_script.bat</path>
-                                </deleteFile>
-                            </actionList>
-                            <ruleList>
-                                <platformTest>
-                                    <type>windows</type>
-                                </platformTest>
-                            </ruleList>
-                        </actionGroup>
-                        <runProgram>
-                            <explanation>${msg(postInstall.installingJRE)}</explanation>
-                            <program>cp</program>
-                            <programArguments>-R ${installdir}/jre32-lin/* ${installdir}/jre/</programArguments>
-                            <progressText>Installing ${bittype}-bit JRE</progressText>
-                            <useMSDOSPath>0</useMSDOSPath>
-                            <ruleList>
-                                <platformTest>
-                                    <type>linux</type>
-                                </platformTest>
-                                <compareValues>
-                                    <logic>equals</logic>
-                                    <value1>${bittype}</value1>
-                                    <value2>32</value2>
-                                </compareValues>
-                            </ruleList>
-                        </runProgram>
-                        <runProgram>
-                            <explanation>${msg(postInstall.installingJRE)}</explanation>
-                            <program>cp</program>
-                            <programArguments>-R ${installdir}/jre64-lin/* ${installdir}/jre/</programArguments>
-                            <progressText>Installing ${bittype}-bit JRE</progressText>
-                            <useMSDOSPath>0</useMSDOSPath>
-                            <ruleList>
-                                <platformTest>
-                                    <type>linux</type>
-                                </platformTest>
-                                <compareValues>
-                                    <logic>equals</logic>
-                                    <value1>${bittype}</value1>
-                                    <value2>64</value2>
-                                </compareValues>
-                            </ruleList>
-                        </runProgram>
-                        <wait>
-                            <ms>2000</ms>
-                        </wait>
-                    </actionList>
-                </actionGroup>
                 <actionGroup>
                     <explanation>${msg(postInstall.configuringRailoTomcat)}</explanation>
                     <progressText>${msg(postInstall.configuringRailoTomcat)}</progressText>
