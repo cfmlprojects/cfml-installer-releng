@@ -36,7 +36,7 @@ set "CURRENT_DIR=%cd%"
 rem CD to the upper dir
 cd ..
 set "CATALINA_HOME=%cd%"
-set "JRE_HOME=@@installdir@@\jdk"
+set "JRE_HOME=@@installdir@@\jre"
 
 if not "%CATALINA_HOME%" == "" goto gotHome
 set "CATALINA_HOME=%cd%"

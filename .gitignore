@@ -1,4 +1,5 @@
 /dist
+/wiki
 /build/creds.txt
 /build/license.xml
 /build/deploy.key
