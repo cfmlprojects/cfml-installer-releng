@@ -106,9 +106,6 @@
                             <origin>osx/bin</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>osx/startpage</origin>
-                        </distributionDirectory>
-                        <distributionDirectory>
                             <origin>${jre.all.dir}/jre64-darwin/jre</origin>
                         </distributionDirectory>
                         <distributionDirectory>
