@@ -382,28 +382,6 @@
                     <files>/Library/LaunchDaemons/org.apache.tomcat.plist</files>
                     <permissions>755</permissions>
                 </changePermissions>
-                <copyFile>
-                    <destination>${installdir}/tomcat/webapps/ROOT/index.html</destination>
-                    <origin>${installdir}/startpage/index.html</origin>
-                    <ruleList>
-                        <isFalse>
-                            <value>${install_fr}</value>
-                        </isFalse>
-                    </ruleList>
-                </copyFile>
-                <copyFile>
-                    <destination>${installdir}/tomcat/webapps/ROOT/index.html</destination>
-                    <origin>${installdir}/startpage/indexfr.html</origin>
-                    <ruleList>
-                        <isTrue>
-                            <value>${install_fr}</value>
-                        </isTrue>
-                    </ruleList>
-                </copyFile>
-                <copyFile>
-                    <destination>${installdir}/tomcat/webapps/ROOT/railo_logo.JPG</destination>
-                    <origin>${installdir}/startpage/railo_logo.JPG</origin>
-                </copyFile>
                 <changePermissions>
                     <files>${installdir}/bin/*</files>
                     <permissions>755</permissions>

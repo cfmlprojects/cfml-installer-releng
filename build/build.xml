@@ -35,6 +35,9 @@
 		</move>
 	</target>
 
+	<target name="build" depends="build.installer">
+	</target>
+
 	<target name="build.installer" depends="build.dependencies, build.installer.tomcat">
 		<mkdir dir="${installer.dist.dir}" />
 		<version-splitter property="engine.version" version="${engine.version}" bump=""/>
@@ -94,6 +97,15 @@
 				<sequential>
 					<antcontrib:propertyregex property="installer.os" input="@{type}" regexp="([^:]+)" select="\1" override="true"/>
 					<antcontrib:propertyregex property="installer.bittype" input="@{type}" regexp=".*?:(.*)" select="\1" override="true"/>
+					<antcontrib:if>
+						<equals arg1="windows" arg2="${installer.os}" />
+						<then>
+							<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="crlf" />
+						</then>
+						<else>
+							<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="lf" />
+						</else>
+					</antcontrib:if>
 					<echo message="installer.os ${installer.os} installer.bittype ${installer.bittype}" />
 					<exec executable="${bitrock.cmd}" dir="${bitrock.installers}" failonerror="true">
 				        <arg line="build @{engine}/@{engine}.xml ${installer.os}"></arg>

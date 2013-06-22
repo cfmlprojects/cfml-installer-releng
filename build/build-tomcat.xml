@@ -10,12 +10,14 @@
 		<move toDir="${installer.tomcat.dir}">
 			<fileset dir="${temp.dir}/apache-tomcat-${installer.tomcat.version}" includes="**" />
 		</move>
+		<copy toDir="${installer.tomcat.dir}/lib" file="${basedir}/resource/mod_cfml/mod_cfml-valve.jar" />
+		<delete dir="${installer.tomcat.dir}/webapps" />
+		<dependency groupId="${engine.groupid}" artifactId="${engine.type}.wartemplate" version="${installer.wartemplate.version}" type="zip"
+			dest="${installer.tomcat.dir}/webapps/ROOT/" unzip="true" />
+		<!-- copy index.cfm customized for installer over default index.cfm --> 
 		<copy toDir="${installer.tomcat.dir}">
 			<fileset dir="${basedir}/resource/tomcat/" includes="**" />
 		</copy>
-		<copy toDir="${installer.tomcat.dir}/lib" file="${basedir}/resource/mod_cfml/mod_cfml-valve.jar" />
-		<delete dir="${installer.tomcat.dir}/webapps/examples" />
-		<delete dir="${installer.tomcat.dir}/webapps/docs" />
 
 		<replaceregexp byline="false" file="${installer.tomcat.dir}/conf/catalina.properties" flags="msi">
 			<regexp pattern="^common.loader=" />
@@ -60,7 +62,7 @@
 			<regexp pattern=".tempcomment.(.*?)./tempcomment." />
 			<substitution expression="&lt;!-- \1 --&gt;" />
 		</replaceregexp>
-
+<!--
 		<xmltask source="${installer.tomcat.dir}/conf/tomcat-users.xml" dest="${installer.tomcat.dir}/conf/tomcat-users.xml">
 			<copy path="tomcat-users/user[@username='@@myTomcatAdminUsername@@']/@username" attrValue="true" property="tomcat.user.exists"/>
 			<insert path="tomcat-users" position="under" unless="tomcat.user.exists">
@@ -75,8 +77,7 @@
 				]]>
 			</insert>
 		</xmltask>
-		<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="crlf" />
-
+-->
 		<delete file="${installer.dist.dir}/${engine.type}-tomcat-${installer.version}.zip"/>
 		<zip destfile="${installer.dist.dir}/${engine.type}-tomcat-${installer.version}.zip">
 			<zipfileset dir="${installer.tomcat.dir}/" 
