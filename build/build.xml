@@ -59,70 +59,101 @@
 		  <regexpmapper from="railo-\d[\d\.]+.jar$" to="railo.jar"/>
 		</move>
 
-		<bitrock-all engine="${engine.type}" />
+		<bitrock-all engine="${engine.type}" withJRE="true" />
+		<bitrock-all engine="${engine.type}" withJRE="false" />
 	</target>
 
-	<target name="build.installer.release" depends="build.installer" >
+	<target name="build.installer.release" depends="build.installer, build.tomcat.release" >
 		<pom-and-deploy pomid="${engine.type}.installer.pom" packaging="pom" buildtype="${mvn.type}" repoId="cfdistro.repo.local"
 		 groupId="${engine.groupid}" artifactId="${engine.type}.installer" version="${installer.version}" name="${engine.type}.installer">
         	<attachments>
-        		<attach file="${installer.dist.dir}/64/${engine.type}-${installer.version}-linux-x64-installer.run" type="run" classifier="linux64"/>
-        		<attach file="${installer.dist.dir}/32/${engine.type}-${installer.version}-linux-installer.run" type="run" classifier="linux32"/>
-        		<attach file="${installer.dist.dir}/64/${engine.type}-${installer.version}-windows-installer.exe" type="exe" classifier="windows64"/>
-        		<attach file="${installer.dist.dir}/32/${engine.type}-${installer.version}-windows-installer.exe" type="exe" classifier="windows32"/>
-        		<attach file="${installer.dist.dir}/64/${engine.type}-${installer.version}-osx-installer.zip" type="zip" classifier="darwin64"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-64-linux-x64-installer.run" type="run" classifier="linux64"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-32-linux-installer.run" type="run" classifier="linux32"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-64-windows-installer.exe" type="exe" classifier="windows64"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-32-windows-installer.exe" type="exe" classifier="windows32"/>
+        		<attach file="${installer.dist.dir}/${engine.type}-${installer.version}-64-osx-installer.zip" type="zip" classifier="darwin64"/>
         	</attachments>
 		</pom-and-deploy>
-		<pom-and-deploy pomid="${engine.type}.tomcat.pom" packaging="zip" buildtype="${mvn.type}" repoId="cfdistro.repo.local"
-		 groupId="${engine.groupid}" artifact="${installer.dist.dir}/${engine.type}-tomcat-${installer.version}.zip" 
-		 artifactId="${engine.type}.tomcat" version="${installer.version}" name="${engine.type}.tomcat" />
+		<pom-and-deploy pomid="${engine.type}.installer.nojre.pom" packaging="pom" buildtype="${mvn.type}" repoId="cfdistro.repo.local"
+		 groupId="${engine.groupid}" artifactId="${engine.type}.installer.nojre" version="${installer.version}" name="${engine.type}.installer.nojre">
+        	<attachments>
+        		<attach file="${installer.dist.dir}/nojre/${engine.type}-${installer.version}-64-linux-x64-installer.run" type="run" classifier="linux64"/>
+        		<attach file="${installer.dist.dir}/nojre/${engine.type}-${installer.version}-32-linux-installer.run" type="run" classifier="linux32"/>
+        		<attach file="${installer.dist.dir}/nojre/${engine.type}-${installer.version}-64-windows-installer.exe" type="exe" classifier="windows64"/>
+        		<attach file="${installer.dist.dir}/nojre/${engine.type}-${installer.version}-32-windows-installer.exe" type="exe" classifier="windows32"/>
+        		<attach file="${installer.dist.dir}/nojre/${engine.type}-${installer.version}-64-osx-installer.zip" type="zip" classifier="darwin64"/>
+        	</attachments>
+		</pom-and-deploy>
+		<delete dir="${temp.dir}"/>
 	</target>
 
 	<macrodef name="bitrock-all">
 		<attribute name="engine" default="${engine.type}" />
+		<attribute name="withJRE" default="${installer.withJRE}" />
 		<sequential>
-			<property name="installer.os.list" value="linux:32, linux-x64:64,  windows:64, windows:32, osx:64"/>
-			<delete dir="${jre.all.dir}" />
-			<dependency groupId="oracle" artifactId="jre" version="${jre.version}" type="zip"
-				classifier="win32" dest="${jre.all.dir}/jre32-win/jre/" unzip="true" />
-			<dependency groupId="oracle" artifactId="jre" version="${jre.version}" type="zip" 
-				classifier="win64" dest="${jre.all.dir}/jre64-win/jre/" unzip="true" />
-			<dependency groupId="oracle" artifactId="jre" version="${jre.version}"  type="zip"
-				classifier="linux32" dest="${jre.all.dir}/jre32-lin/jre/" unzip="true" />
-			<dependency groupId="oracle" artifactId="jre" version="${jre.version}"  type="zip"
-				classifier="linux64" dest="${jre.all.dir}/jre64-lin/jre/" unzip="true" />
-			<dependency groupId="oracle" artifactId="jre" version="${jre.version}"  type="zip"
-				classifier="darwin64" dest="${jre.all.dir}/jre64-darwin/jre/" unzip="true" />
+			<property name="installer.bitrock.outputdir" value="${installer.dist.dir}"/>
+			<property name="installer.os.list" value="linux:32, linux:64, win:64, win:32, darwin:64"/>
+			<antcontrib:var name="installer.withJRE" value="@{withJRE}"/>
 	    	<antcontrib:for list="${installer.os.list}" param="type">
 				<sequential>
-					<antcontrib:propertyregex property="installer.os" input="@{type}" regexp="([^:]+)" select="\1" override="true"/>
+					<antcontrib:propertyregex property="installer.os" input="@{type}" regexp="\s*([^:]+)" select="\1" override="true"/>
 					<antcontrib:propertyregex property="installer.bittype" input="@{type}" regexp=".*?:(.*)" select="\1" override="true"/>
 					<antcontrib:if>
-						<equals arg1="windows" arg2="${installer.os}" />
+						<equals arg1="true" arg2="${installer.withJRE}" />
 						<then>
-							<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="crlf" />
+							<delete dir="${jre.all.dir}" />
+							<dependency groupId="oracle" artifactId="jre" version="${jre.version}" type="zip"
+								classifier="${installer.os}${installer.bittype}" dest="${jre.all.dir}/${installer.os}${installer.bittype}/jre" unzip="true" />
+							<echo message="JRE: ${jre.all.dir}/${installer.os}${installer.bittype}" />
 						</then>
 						<else>
-							<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="lf" />
+							<antcontrib:var name="installer.bitrock.outputdir" value="${installer.bitrock.outputdir}/nojre/"/>
+							<echo message="NO JRE" />
 						</else>
 					</antcontrib:if>
-					<echo message="installer.os ${installer.os} installer.bittype ${installer.bittype}" />
+
+					<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="lf" />
+					<antcontrib:switch value="${installer.os}">
+					  <case value="win">
+					  	<antcontrib:var name="bitrock.os" value="windows" />
+						<fixcrlf srcdir="${installer.tomcat.dir}/conf" includes="**/*.xml" eol="crlf" />
+					  </case>
+					  <case value="darwin">
+					  	<antcontrib:var name="bitrock.os" value="osx" />
+					  </case>
+					  <case value="linux">
+						<antcontrib:if>
+							<equals arg1="64" arg2="${installer.bittype}" />
+							<then>
+					  			<antcontrib:var name="bitrock.os" value="linux-x64" />
+							</then>
+							<else>
+					  			<antcontrib:var name="bitrock.os" value="linux" />
+							</else>
+						</antcontrib:if>
+					  </case>
+					  <default>
+					  </default>
+					</antcontrib:switch>
+
+					<echo message="installer.os ${installer.os} installer.bittype ${installer.bittype} (bitrock os: ${bitrock.os}) w/jre:${installer.withJRE}" />
+
 					<exec executable="${bitrock.cmd}" dir="${bitrock.installers}" failonerror="true">
-				        <arg line="build @{engine}/@{engine}.xml ${installer.os}"></arg>
-				        <arg line="--setvars project.outputDirectory='${installer.dist.dir}/${installer.bittype}/' installer.version='${installer.version}'"/>
-				        <arg line="--setvars tomcat.dir='${installer.tomcat.dir}' jre.all.dir='${jre.all.dir}'"/>
+				        <arg line="build @{engine}/@{engine}.xml ${bitrock.os}"></arg>
+				        <arg line="--setvars project.outputDirectory='${installer.bitrock.outputdir}' installer.version='${installer.version}-${installer.bittype}'"/>
+				        <arg line="--setvars tomcat.dir='${installer.tomcat.dir}' withJRE='${installer.withJRE}' jre.dir='${jre.all.dir}/${installer.os}${installer.bittype}/jre'"/>
 				        <arg line="--setvars cfml.engine.libs='${cfml.engine.libs}' bittype=${installer.bittype}"/>
 				        <arg line="--license '${bitrock.license}'"/>
 			        </exec>
 				</sequential>
 			</antcontrib:for>
 	
-			<zip destfile="${installer.dist.dir}/64/@{engine}-${installer.version}-osx-installer.zip" update="false">
-				<fileset dir="${installer.dist.dir}/64/" 
-					includes="@{engine}-${installer.version}-osx-installer.app/**"
-					excludes="@{engine}-${installer.version}-osx-installer.app/Contents/MacOS/**"/>
-				<zipfileset dir="${installer.dist.dir}/64/" 
-					includes="@{engine}-${installer.version}-osx-installer.app/Contents/MacOS/**"
+			<zip destfile="${installer.bitrock.outputdir}/@{engine}-${installer.version}-64-osx-installer.zip" update="false">
+				<fileset dir="${installer.dist.dir}" 
+					includes="@{engine}-${installer.version}-${installer.bittype}-osx-installer.app/**"
+					excludes="@{engine}-${installer.version}-${installer.bittype}-osx-installer.app/Contents/MacOS/**"/>
+				<zipfileset dir="${installer.dist.dir}" 
+					includes="@{engine}-${installer.version}-${installer.bittype}-osx-installer.app/Contents/MacOS/**"
 					filemode="711"/>
 			</zip>
 	

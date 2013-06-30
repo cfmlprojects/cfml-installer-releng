@@ -54,10 +54,21 @@
                         <distributionDirectory>
                             <origin>windows/AJP13</origin>
                         </distributionDirectory>
+                    </distributionFileList>
+                </folder>
+                <folder>
+                    <description>JRE</description>
+                    <destination>${installdir}</destination>
+                    <platforms>all</platforms>
+                    <name>jre</name>
+                    <distributionFileList>
                         <distributionDirectory>
-                            <origin>${jre.all.dir}/jre${bittype}-win</origin>
+                            <origin>${jre.dir}</origin>
                         </distributionDirectory>
                     </distributionFileList>
+                    <shouldPackRuleList>
+                      <compareText text="${withJRE}" logic="equals" value="true"/>
+                    </shouldPackRuleList>
                 </folder>
                 <folder>
                     <description>Linux 32</description>
@@ -69,7 +80,7 @@
                             <origin>linux/sys</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>${jre.all.dir}/jre32-lin</origin>
+                            <origin>${jre.dir}/jre32-lin</origin>
                         </distributionDirectory>
                         <distributionDirectory>
                             <origin>linux/tomcat_connectors</origin>
@@ -84,9 +95,6 @@
                     <distributionFileList>
                         <distributionDirectory>
                             <origin>linux/sys</origin>
-                        </distributionDirectory>
-                        <distributionDirectory>
-                            <origin>${jre.all.dir}/jre64-lin</origin>
                         </distributionDirectory>
                         <distributionDirectory>
                             <origin>linux/tomcat_connectors</origin>
@@ -104,9 +112,6 @@
                         </distributionDirectory>
                         <distributionDirectory>
                             <origin>osx/bin</origin>
-                        </distributionDirectory>
-                        <distributionDirectory>
-                            <origin>${jre.all.dir}/jre64-darwin/jre</origin>
                         </distributionDirectory>
                         <distributionDirectory>
                             <origin>osx/tomcat_connectors</origin>
@@ -776,6 +781,10 @@
         </component>
     </componentList>
     <initializationActionList>
+        <setInstallerVariable>
+            <name>withJRE</name>
+            <value>true</value>
+        </setInstallerVariable>
         <setInstallerVariable>
             <name>my_prefix</name>
             <persist>1</persist>
@@ -1644,9 +1653,6 @@
         </slideShowImage>
         <slideShowImage>
             <path>railo4_professional_ad.png</path>
-        </slideShowImage>
-        <slideShowImage>
-            <path>railo-ads-fr.png</path>
         </slideShowImage>
     </slideShowImageList>
 </project>
