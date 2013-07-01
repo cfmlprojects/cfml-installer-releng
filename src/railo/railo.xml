@@ -80,9 +80,6 @@
                             <origin>linux/sys</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>${jre.dir}/jre32-lin</origin>
-                        </distributionDirectory>
-                        <distributionDirectory>
                             <origin>linux/tomcat_connectors</origin>
                         </distributionDirectory>
                     </distributionFileList>
