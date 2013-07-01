@@ -107,7 +107,7 @@
 							<echo message="JRE: ${jre.all.dir}/${installer.os}${installer.bittype}" />
 						</then>
 						<else>
-							<antcontrib:var name="installer.bitrock.outputdir" value="${installer.bitrock.outputdir}/nojre/"/>
+							<antcontrib:var name="installer.bitrock.outputdir" value="${installer.dist.dir}/nojre/"/>
 							<echo message="NO JRE" />
 						</else>
 					</antcontrib:if>
