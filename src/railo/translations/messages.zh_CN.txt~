@@ -61,8 +61,8 @@ params.ApacheLogDirExplanation=请输入 Apache 存放日志文件的目录。RH
 params.installIISConnectorTitle=安装 IIS 连接程序吗？
 params.installIISConnectorDesc=安装 IIS 连接程序吗？
 params.installIISConnectorExplanation=你想安装 IIS 连接程序吗？\n\n如果不确定，请保持该选项为选中状态。
-railopass.title=Railo 密码
-railopass.explain=请输入 Railo Server 管理员和 Railo Web 管理员使用的默认密码。
-railopass.desc=Railo 密码
-railopass.desc.confirm=Railo 密码（确认）
+railopass.title=Railo Password
+railopass.explain=Please enter in the default passwords for the Railo Server Administrator and the Railo Web Administrators.
+railopass.desc=Railo Password
+railopass.desc.confirm=Railo Password (confirm)
 
