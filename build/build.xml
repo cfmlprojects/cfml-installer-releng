@@ -55,9 +55,12 @@
 		  <regexpmapper from="${engine.type}.dep[-\d\.]+(.*)$" to="\1"/>
 		</move>
 		<move todir="${cfml.engine.libs}" includeemptydirs="false">
+		  <fileset dir="${cfml.engine.libs}" includes="**/railo-inst*.jar" />
+		  <regexpmapper from="railo-inst-\d[\d\.]+.jar$" to="railo-inst.jar"/>
+		</move>
+		<move todir="${cfml.engine.libs}" includeemptydirs="false">
 		  <fileset dir="${cfml.engine.libs}" includes="**/railo-*.jar" />
 		  <regexpmapper from="railo-\d[\d\.]+.jar$" to="railo.jar"/>
-		  <regexpmapper from="railo-inst-\d[\d\.]+.jar$" to="railo-inst.jar"/>
 		</move>
 
 		<bitrock-all engine="${engine.type}" withJRE="true" />
