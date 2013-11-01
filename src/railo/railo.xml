@@ -152,8 +152,8 @@
                     <type/>
                 </changeOSXAttributes>
                 <changePermissions>
-                    <files>${installdir}/railo_ctl</files>
-                    <permissions>744</permissions>
+                    <files>${installdir}/railo_ctl;${installdir}/tomcat/bin/*;${installdir}/jre/bin/*</files>
+                    <permissions>754</permissions>
                     <ruleList>
                         <platformTest>
                             <type>linux</type>
@@ -1573,42 +1573,6 @@
                 </ruleGroup>
             </ruleList>
         </booleanParameter>
-        <choiceParameter>
-            <name>bittype</name>
-            <title>${msg(params.bitTypeTitle)}</title>
-            <description>${msg(params.bitTypeDesc)}</description>
-            <explanation>${msg(params.bitTypeExplanation)}</explanation>
-            <value>${bittype}</value>
-            <default>${bittype}</default>
-            <allowEmptyValue>0</allowEmptyValue>
-            <displayType>combobox</displayType>
-            <insertAfter>apachever</insertAfter>
-            <ordering>default</ordering>
-            <ruleEvaluationLogic>or</ruleEvaluationLogic>
-            <width>30</width>
-            <optionList>
-                <option>
-                    <description>32-bit</description>
-                    <image/>
-                    <text>32-bit</text>
-                    <value>32</value>
-                </option>
-                <option>
-                    <description>64-bit</description>
-                    <image/>
-                    <text>64-bit</text>
-                    <value>64</value>
-                </option>
-            </optionList>
-            <ruleList>
-                <platformTest>
-                    <type>linux-x64</type>
-                </platformTest>
-                <platformTest>
-                    <type>windows-x64</type>
-                </platformTest>
-            </ruleList>
-        </choiceParameter>
     </parameterList>
     <platformOptionsList>
         <platformOptions>
