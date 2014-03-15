@@ -40,7 +40,7 @@ if [ -z $1 ]; then  # make sure it was specified
 	echo "";
         echo "Usage: ./change_user.sh [username] /path/to/installdir [engine]";
         exit 1;
-elif [[ ! $1 =~ ^[a-z][a-zA-Z0-9_-]+$ ]]; then  # make sure username is a valid format
+elif [ ! "$1" =~ ^[a-z][a-zA-Z0-9_-]+$ ]; then  # make sure username is a valid format
         echo "Error: Invalid User Name";
 	echo "";
 	echo "Rules for User Names:";
@@ -77,10 +77,10 @@ if [ -z $3 ]; then # see if an engine was specified
 	echo "";
         echo "Usage: ./change_user.sh [username] /path/to/installdir [engine]";
         exit 1;
-elif [[ "$3" = "railo" ]]; then
+elif [ "$3" = "railo" ]; then
 	myCFServerName="Railo";
 	myControlScriptName="railo_ctl";
-elif [[ "$3" = "openbd" ]]; then
+elif [ "$3" = "openbd" ]; then
 	myCFServerName="OpenBD";
 	myControlScriptName="openbd_ctl";
 else
